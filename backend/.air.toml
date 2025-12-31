@@ -1,0 +1,14 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./bin/worker ./cmd/worker && go build -o ./tmp/coordinator ./cmd/coordinator"
+  entrypoint = "./tmp/coordinator"
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "vendor", "frontend", "bin"]
+  delay = 200
+
+
+[log]
+  time = true
+

@@ -3,6 +3,7 @@ package rpc
 import (
 	"net/rpc"
 	"time"
+	"fmt"
 )
 
 type Client struct {
@@ -46,3 +47,27 @@ func (cl *Client) Heartbeat(workerID string) error {
 		return rpc.ErrShutdown // 简单超时处理；后续可自定义错误
 	}
 }
+
+func (cl *Client) RequestTask(workerID string) (*RequestTaskReply, error) {
+	args := &RequestTaskArgs{WorkerID: workerID}
+	reply := &RequestTaskReply{}
+	if err := cl.c.Call("CoordinatorRPC.RequestTask", args, reply); err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (cl *Client) ReportTaskDone(workerID, taskID string) error {
+    args := &ReportTaskDoneArgs{WorkerID: workerID, TaskID: taskID}
+    reply := &ReportTaskDoneReply{}
+    if err := cl.c.Call("CoordinatorRPC.ReportTaskDone", args, reply); err != nil {
+        return err
+    }
+    if !reply.OK {
+        return fmt.Errorf("report not ok")
+    }
+    return nil
+}
+
+
+

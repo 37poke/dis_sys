@@ -57,8 +57,8 @@ func (cl *Client) RequestTask(workerID string) (*RequestTaskReply, error) {
 	return reply, nil
 }
 
-func (cl *Client) ReportTaskDone(workerID, taskID string) error {
-    args := &ReportTaskDoneArgs{WorkerID: workerID, TaskID: taskID}
+func (cl *Client) ReportTaskDone(workerID, taskID string, leaseToken string) error {
+    args := &ReportTaskDoneArgs{WorkerID: workerID, TaskID: taskID, LeaseToken: leaseToken,}
     reply := &ReportTaskDoneReply{}
     if err := cl.c.Call("CoordinatorRPC.ReportTaskDone", args, reply); err != nil {
         return err
@@ -68,6 +68,24 @@ func (cl *Client) ReportTaskDone(workerID, taskID string) error {
     }
     return nil
 }
+
+func (cl *Client) ReportTaskFailed(workerID, taskID, msg string, leaseToken string) (bool, error) {
+	args := &ReportTaskFailedArgs{
+		WorkerID: workerID,
+		TaskID:   taskID,
+		ErrorMsg: msg,
+		LeaseToken: leaseToken,
+	}
+	reply := &ReportTaskFailedReply{}
+	if err := cl.c.Call("CoordinatorRPC.ReportTaskFailed", args, reply); err != nil {
+		return false, err
+	}
+	if !reply.OK {
+		return false, fmt.Errorf("report failed not ok")
+	}
+	return reply.Requeued, nil
+}
+
 
 
 
